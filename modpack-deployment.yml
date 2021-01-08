@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: skyfactory4
+spec:
+  ports:
+    - port: 30303
+      protocol: TCP
+  selector:
+    app: skyfactory4
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: skyfactory-data
+  labels:
+    type: local
+spec:
+  storageClassName: sfdata
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/sean/skyfactory4"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: skyfactory-data-claim
+spec:
+  storageClassName: sfdata
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skyfactory4
+spec:
+  selector:
+    matchLabels:
+      app: skyfactory4
+  template:
+    metadata:
+      labels:
+        app: skyfactory4
+    spec:
+      containers:
+      - image: shizzle/skyfactory4
+        name: skyfactory4
+        imagePullPolicy: Never
+        env:
+          # Use secret in real usage
+        - name: EULA
+          value: "true"
+        - name: MEMORY
+          value: 6G
+        ports:
+        - containerPort: 25565
+          hostPort: 30303
+          name: skyfactory4
+        volumeMounts:
+        - name: mc-data
+          mountPath: /opt/minecraft
+      volumes:
+        - name: mc-data
+          #emptyDir: {}
+          persistentVolumeClaim:
+            claimName: skyfactory-data-claim
