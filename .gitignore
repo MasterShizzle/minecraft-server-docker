@@ -10,6 +10,8 @@ world_forge/*
 best_world_bk/
 world*/
 mods*/
+files/sky*
+files/sf4*
 .idea/
 .gradle/
 
